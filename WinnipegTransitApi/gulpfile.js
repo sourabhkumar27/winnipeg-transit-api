@@ -1,4 +1,4 @@
-const {src, dest, series} = require('gulp');
+const {src, dest, series, watch, parallel} = require('gulp');
 const browsersync = require('browser-sync');
 const autoprefixer = require('gulp-autoprefixer');
 const concat = require('gulp-concat');
@@ -24,7 +24,8 @@ function html() {
       js: 'js/bundle.js',
     })
   )
-  .pipe(dest('dist/'));
+  .pipe(dest('dist/'))
+  .pipe(browsersync.stream());
 }
 
 function styles() {
@@ -34,7 +35,8 @@ function styles() {
   .pipe(concat('all-style.css'))
   .pipe(cleanCss())
   .pipe(sourcemaps.write())
-  .pipe(dest('dist/css/'));
+  .pipe(dest('dist/css/'))
+  .pipe(browsersync.stream());
 }
 
 function scripts() {
@@ -43,8 +45,15 @@ function scripts() {
   .pipe(concat('bundle.js'))
   .pipe(uglify())
   .pipe(sourcemaps.write())
-  .pipe(dest('dist/js/'));
+  .pipe(dest('dist/js/'))
+  .pipe(browsersync.stream());
 }
 
-exports.watch = browserSync;
+function watchFiles() {
+    watch('src/scripts/*.js');
+    watch('src/css/*.css');
+    watch('src/*.html');
+}
+
+exports.watch = parallel(browserSync, watchFiles);
 exports.default = series(html, styles, scripts);
